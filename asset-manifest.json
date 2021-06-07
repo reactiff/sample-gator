@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/sample-gator/static/css/main.0cabef19.chunk.css",
+    "main.js": "/sample-gator/static/js/main.f4e85b21.chunk.js",
+    "main.js.map": "/sample-gator/static/js/main.f4e85b21.chunk.js.map",
+    "runtime-main.js": "/sample-gator/static/js/runtime-main.a935f8fe.js",
+    "runtime-main.js.map": "/sample-gator/static/js/runtime-main.a935f8fe.js.map",
+    "static/js/2.4030d5c0.chunk.js": "/sample-gator/static/js/2.4030d5c0.chunk.js",
+    "static/js/2.4030d5c0.chunk.js.map": "/sample-gator/static/js/2.4030d5c0.chunk.js.map",
+    "index.html": "/sample-gator/index.html",
+    "precache-manifest.3179e37b67ff6b696fcbf5abca8cc423.js": "/sample-gator/precache-manifest.3179e37b67ff6b696fcbf5abca8cc423.js",
+    "service-worker.js": "/sample-gator/service-worker.js",
+    "static/css/main.0cabef19.chunk.css.map": "/sample-gator/static/css/main.0cabef19.chunk.css.map",
+    "static/js/2.4030d5c0.chunk.js.LICENSE.txt": "/sample-gator/static/js/2.4030d5c0.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.a935f8fe.js",
+    "static/js/2.4030d5c0.chunk.js",
+    "static/css/main.0cabef19.chunk.css",
+    "static/js/main.f4e85b21.chunk.js"
+  ]
+}
