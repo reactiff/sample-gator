@@ -1404,7 +1404,7 @@
   resolved "https://registry.yarnpkg.com/@reactiff/random-walk/-/random-walk-1.0.0.tgz#f3cbb0a785ed55d8f3dc197b1b9c9f178db84c57"
   integrity sha512-gaCMWY4Wlr5c6V51VQ4EhYPE5wNwk5DY/db3nV2GxE8Gf6pX/RRPoNAAo/ZraiNvVJfxhJ9Ly0yToFeELbK+5g==
 
-"@reactiff/sample-gator@link:..":
+"sample-gator@link:..":
   version "0.0.0"
   uid ""
 

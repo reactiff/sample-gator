@@ -1,6 +1,6 @@
 
-// import { value, when } from '@reactiff/sample-gator';
-// import { SampleFields } from '@reactiff/sample-gator/dist/types';
+// import { value, when } from 'sample-gator';
+// import { SampleFields } from 'sample-gator/dist/types';
 
 // const { min, max, abs } = Math;
 

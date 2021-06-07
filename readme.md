@@ -1,10 +1,7 @@
 # sample-gator
 Real-time streaming data sample-r and aggre-gator with closed-circuit recording, efficient memory management and FIFO/LIFO readout sweeps, providing endless (and seamless) data capture, and processing.
 
-[![NPM](https://img.shields.io/npm/v/@reactiff/sample-gator.svg)](https://www.npmjs.com/package/@reactiff/sample-gator) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.comS)<img src="https://github.com/reactiff/sample-gator/raw/master/logo.jpg" alt="drawing" height="20" style="margin-left: 3px; margin-bottom: 0px; border-radius: 2px" />
-
-
-
+[![NPM](https://img.shields.io/npm/v/sample-gator.svg)](https://www.npmjs.com/package/sample-gator) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.comS)<img src="https://github.com/reactiff/sample-gator/raw/master/logo.jpg" alt="drawing" height="20" style="margin-left: 3px; margin-bottom: 0px; border-radius: 2px" />
   
 
 ## Why
@@ -47,7 +44,7 @@ All you need to do is:
 ## Install 
 
 ```bash
-yarn add @reactiff/sample-gator
+yarn add sample-gator
 ```
 
 <br>
@@ -80,7 +77,7 @@ sampler.startSampling();
 ```tsx
 // EXAMPLE 1 - SIMPLE READOUT
 
-import { SamplingBuffer } from '@reactiff/sample-gator';
+import { SamplingBuffer } from 'sample-gator';
 
 const INTERVAL = 1000;  // ms
 const LENGTH   = 3600;  // this means one hour
@@ -175,7 +172,7 @@ They both accept a callback of form:
 In previous example we used an array of field names corresponding to data fields.  You can define your own fields and how they should be calculated.
 
 ```ts
-import { value, when } from '@reactiff/sample-gator';
+import { value, when } from 'sample-gator';
 
 const field = {            
     _buy:       (d) => when(d.qty > 0, () => d.buy  = 1),  // [^4]

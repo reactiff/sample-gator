@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import DataTable from './DataTable';
-import { SamplingBuffer, ClosedCircuitBuffer, FieldGroups } from "@reactiff/sample-gator";
+import { SamplingBuffer, ClosedCircuitBuffer, FieldGroups } from "sample-gator";
 import RandomWalk from '@reactiff/random-walk';
 
 const rndWalk = new RandomWalk(1, 1000, 500, 10, 10);

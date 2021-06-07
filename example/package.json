@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@reactiff/random-walk": "^1.0.0",
-    "@reactiff/sample-gator": "link:..",
+    "sample-gator": "link:..",
     "@testing-library/jest-dom": "link:../node_modules/@testing-library/jest-dom",
     "@testing-library/react": "link:../node_modules/@testing-library/react",
     "@testing-library/user-event": "link:../node_modules/@testing-library/user-event",
