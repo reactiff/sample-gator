@@ -1,8 +1,10 @@
-# sample-gator<img src="https://github.com/reactiff/sample-gator/raw/master/logo.jpg" alt="drawing" height="20" style="margin-left: 10px; margin-bottom: -3px; border-radius: 2px" />
-[![NPM](https://img.shields.io/npm/v/@reactiff/sample-gator.svg)](https://www.npmjs.com/package/@reactiff/sample-gator) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.comS)
-
-
+# sample-gator
 Real-time streaming data sample-r and aggre-gator with closed-circuit recording, efficient memory management and FIFO/LIFO readout sweeps, providing endless (and seamless) data capture, and processing.
+
+[![NPM](https://img.shields.io/npm/v/@reactiff/sample-gator.svg)](https://www.npmjs.com/package/@reactiff/sample-gator) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.comS)<img src="https://github.com/reactiff/sample-gator/raw/master/logo.jpg" alt="drawing" height="20" style="margin-left: 3px; margin-bottom: 0px; border-radius: 2px" />
+
+
+
   
 
 ## Why
