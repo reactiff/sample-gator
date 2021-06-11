@@ -49,7 +49,7 @@ export type FieldDict = {
 };
 
 export type Sampler = {
-    series:                 SerieFactoryDictionary,
+    series:                 Dictionary<Serie>,
     fields:                 FieldDict,
     cumulatives:            string[],
     timeKey:                string;
@@ -117,5 +117,4 @@ export type SamplingOrchestratorOptions = { samplers: Sampler[] };
 export type SamplingBufferEvent         = 'onTrackStart';
 export type TrackDictionary             = Dictionary<ClosedCircuitBuffer>;
 
-export type SerieFactoryDictionary      = Dictionary<SerieFactory>;
-export type Expression                  = (series: SerieFactoryDictionary) => number | undefined;
+export type Expression                  = (series: Dictionary<SerieFactory>) => number | undefined;
