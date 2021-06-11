@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import DataTable from './DataTable';
-import { SamplingBuffer, ClosedCircuitBuffer, FieldGroups } from "sample-gator";
+import Sampler, { ClosedCircuitBuffer, FieldGroups } from "sample-gator";
 import RandomWalk from '@reactiff/random-walk';
 
 const rndWalk = new RandomWalk(1, 1000, 500, 10, 10);
 
-const buffer = new SamplingBuffer({
+const buffer = new Sampler({
   interval:       1000,               // in milliseconds
   bufferLength:   30,                 // total samples in closed circuit buffer
   trackKeys:      ['exch'],           // create track for each unique combination of these data fields

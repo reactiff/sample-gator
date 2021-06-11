@@ -3,9 +3,9 @@
   "extends": [
     "standard",
     "standard-react",
-    "plugin:prettier/recommended",
-    "prettier/standard",
-    "prettier/react",
+    // "plugin:prettier/recommended",
+    // "prettier/standard",
+    // "prettier/react",
     "plugin:@typescript-eslint/eslint-recommended"
   ],
   "env": {
@@ -29,6 +29,31 @@
     "react/jsx-handler-names": 0,
     "react/jsx-fragments": 0,
     "react/no-unused-prop-types": 0,
-    "import/export": 0
+    "import/export": 0,
+    "no-multi-spaces": 0,
+    "no-trailing-spaces": 0,
+    "indent": 0,
+    "semi": 0,
+    "no-unused-vars": 0,
+    "quotes": 0,
+    "no-multiple-empty-lines": 0,
+
+    "array-bracket-spacing": 0,
+    "comma-dangle": 0,
+    "key-spacing": 0,
+    
+    "space-in-parens": 0,
+    "eol-last": 0,
+    "padded-blocks": 0,
+
+    "space-infix-ops": 0,
+    "prefer-const": 0,
+    "object-curly-spacing": 0,
+    "no-extra-boolean-cast": 0,
+    "brace-style": 0,
+    "no-return-assign": 0,
+
+    "spaced-comment": 0
+
   }
 }

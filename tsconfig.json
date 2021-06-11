@@ -3,7 +3,9 @@
     "outDir": "dist",
     "module": "esnext",
     "target": "es5",
-    "lib": ["esnext"],
+    "lib": [
+      "esnext"
+    ],
     "moduleResolution": "node",
     "sourceMap": true,
     "declaration": true,
@@ -15,8 +17,22 @@
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react"
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "example"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "example"
+  ]
 }

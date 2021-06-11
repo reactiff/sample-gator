@@ -1,5 +1,5 @@
 
-import { value, when } from '.';
+import { value, when } from './helpers';
 import { SampleFields } from './types';
 
 const { min, max, abs } = Math;

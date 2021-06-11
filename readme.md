@@ -52,7 +52,7 @@ yarn add sample-gator
 ## Basic usage
 
 ```ts
-const sampler = new SamplingBuffer({ 
+const sampler = new Sampler({ 
     interval:       1000, // 1000 ms == 1 second
     bufferLength:   3600,         
     fields:         [ 'time', 'price', 'qty' ],     
@@ -77,12 +77,12 @@ sampler.startSampling();
 ```tsx
 // EXAMPLE 1 - SIMPLE READOUT
 
-import { SamplingBuffer } from 'sample-gator';
+import { Sampler } from 'sample-gator';
 
 const INTERVAL = 1000;  // ms
 const LENGTH   = 3600;  // this means one hour
 
-const sampler  = new SamplingBuffer({
+const sampler  = new Sampler({
     interval:     INTERVAL,   
     bufferLength: LENGTH,             
     fields:       [ 'time', 'price', 'qty' ],

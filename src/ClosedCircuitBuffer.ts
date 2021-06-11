@@ -4,12 +4,12 @@ import {
     IteratorPosition,
     NewSamplePredicate,
     Sampler,
-    SerieFactory,
+    Dictionary,
 } from './types';
 
 class ClosedCircuitBuffer {
     
-    key: string;
+    key: string = '';
     tags: any = {};
 
     array: any[] = [];
@@ -19,14 +19,14 @@ class ClosedCircuitBuffer {
     shouldAdvance: NewSamplePredicate;
 
     // prevSample: any;
-    lastPeriodTime: number;
+    lastPeriodTime: number = 0;
     sampler: Sampler;
 
     onUpdate?: () => void;
     lastAdvanceTime?: number;
 
     serieInstances: any = {};
-    series: { [index: string]: SerieFactory } = {};
+    series: Dictionary<Serie> = {};
 
     constructor(length: number, sampler: Sampler) {
         const arrayLike = { length }; 

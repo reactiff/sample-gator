@@ -1,7 +1,7 @@
 import ClosedCircuitBuffer from "./ClosedCircuitBuffer";
 import Serie from "./Serie";
 
-type Dictionary<T> = { [index: string]: T };
+export type Dictionary<T> = { [index: string]: T };
 
 export type IteratorPosition = {  
     index: number,
@@ -83,20 +83,16 @@ export type AccumulationFunction        = (data: any, currentAggregateValue?: nu
 export type ForwardFillFunction         = (data: any, previous: any) => number | undefined;
 
 export type SampleFieldUnnamed          = { fn: AccumulationFunction, cumulative?: boolean, fill?: ForwardFillFunction };
-export type SampleFieldDictEntry            = SampleFieldUnnamed | AccumulationFunction | string | number;
-export type SampleFieldDictionary       = Dictionary<SampleFieldDictEntry>;
+export type SampleFieldDictEntry        = SampleFieldUnnamed | AccumulationFunction | string | number;
 
 export type SampleFieldNamed            = { name: string, fn: AccumulationFunction, cumulative?: boolean, fill?: ForwardFillFunction };
 export type SampleFieldArrayItem        = SampleFieldNamed | string;
 export type SampleFieldArray            = SampleFieldArrayItem[];
 
-export type SampleFields                = SampleFieldDictionary | SampleFieldArray;
+export type SampleFields                = Dictionary<SampleFieldDictEntry> | SampleFieldArray;
 export type ConditionalOp               = () => number | undefined;
 
-export type SerieDictionary             = Dictionary<Serie>;
 export type SerieFactory                = () => Serie;
-
-
 
 export type SerieOptions = {
     field:   string,
@@ -114,7 +110,6 @@ export type CustomAggregateFn           = (                                     
 export type BufferFilter                = (name: string, buffer: ClosedCircuitBuffer) => boolean;
 export type SamplingOrchestratorOptions = { samplers: Sampler[] };
 
-export type SamplingBufferEvent         = 'onTrackStart';
-export type TrackDictionary             = Dictionary<ClosedCircuitBuffer>;
+export type SamplerEvent         = 'onTrackStart';
 
-export type Expression                  = (series: Dictionary<SerieFactory>) => number | undefined;
+export type Expression                  = (series: Dictionary<Serie>) => number | undefined;

@@ -1,10 +1,7 @@
 import ClosedCircuitBuffer from "./ClosedCircuitBuffer";
-import { BufferFilter, Expression, Sampler, SamplerOptions, TrackDictionary } from './types';
-
+import { BufferFilter, Expression, Sampler, SamplerOptions, Dictionary } from './types';
 import { createSampler } from './createSampler';
-
-import { value as valueOrDefault } from '.';
-import Serie from "./Serie";
+import { value as valueOrDefault } from './helpers';
 
 const noFilter = () => true;
 
@@ -12,7 +9,7 @@ class MultiTrackBuffer {
 
   timer:          any;
   sampler:        Sampler;
-  tracks:         TrackDictionary = {};
+  tracks:         Dictionary<ClosedCircuitBuffer> = {};
   sampling:       boolean         = false;
   
   // -- EVENTS 
