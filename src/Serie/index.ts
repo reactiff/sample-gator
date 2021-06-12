@@ -1,65 +1,73 @@
 import ClosedCircuitBuffer from "../ClosedCircuitBuffer";
 import { SerieOptions, AggregateFn1Def, AggregateFn1, CustomAggregateFnDef, CustomAggregateFn, CustomAggregateVoidCallback } from '../types';
 
+export type CompetingValuePair = { current?: number, best?: number };
 
 const fnMin: AggregateFn1Def = (serie: Serie, options: SerieOptions, n: number, offset?: number) => {
-    const availLength = options.track.getOffsetAdjAvailableLength(offset||0);
-    if (availLength < n) return undefined;
-
-    const elements  = new Array(availLength);
-    options.track.lifo((pos, buffer) => {
-        elements[pos.ordinal] = buffer[pos.index][options.field];
-    }, offset||0, availLength)
-    
-    return Math.min(...elements);
+    const availLength = serie.availableLength||0;
+    const limit = Math.min(availLength, n);
+    const v: CompetingValuePair = {};
+    const { track, field } = serie;
+    track.lifo(idx => {
+        v.current = track.array[idx.index][field];
+        if (typeof v.current !== 'undefined') {
+            if (typeof v.best === 'undefined' || v.current < v.best) {
+                v.best = v.current;
+            }
+        }
+    }, offset||0, limit)
+    return v.best;
 }
 
 const fnMax: AggregateFn1Def = (serie: Serie, options: SerieOptions, n: number, offset?: number) => {
-    const availLength = options.track.getOffsetAdjAvailableLength(offset||0);
-    if (availLength < n) return undefined;
-
-    const elements  = new Array(availLength);
-    options.track.lifo((pos, buffer) => {
-        elements[pos.ordinal] = buffer[pos.index][options.field];
-    }, offset||0, availLength)
-    
-    return Math.max(...elements);
+    const availLength = serie.availableLength||0;
+    const limit = Math.min(availLength, n);
+    const v: CompetingValuePair = {};
+    const { track, field } = serie;
+    track.lifo(idx => {
+        v.current = track.array[idx.index][field];
+        if (typeof v.current !== 'undefined') {
+            if (typeof v.best === 'undefined' || v.current > v.best) {
+                v.best = v.current;
+            }
+        }
+    }, offset||0, limit);
+    return v.best;
 }
 
 
 const fnSum: AggregateFn1Def = (serie: Serie, options: SerieOptions, n: number, offset?: number) => {
-    const availLength = options.track.getOffsetAdjAvailableLength(offset||0);
-    if (availLength < n) return undefined;
-    
+    const availLength = serie.availableLength||0;
+    const limit = Math.min(availLength, n);
     let sum = 0;
-    options.track.lifo((pos, buffer) => {
-        sum += buffer[pos.index][options.field];
-    }, offset||0, availLength)
-    
+    const { track, field } = serie;
+    track.lifo(idx => {
+        sum += track.array[idx.index][field];
+    }, offset||0, limit);
     return sum;
 }
 
 const fnMean: AggregateFn1Def = (serie: Serie, options: SerieOptions, n: number, offset?: number) => {
-    const availLength = options.track.getOffsetAdjAvailableLength(offset||0);
-    if (availLength < n) return undefined;
-    
+    const availLength = serie.availableLength||0;
+    const limit = Math.min(availLength, n);
     let sum = 0;
     let cnt = 0;
-
-    options.track.lifo((pos, buffer) => {
-        sum += buffer[pos.index][options.field];
+    const { track, field } = serie;
+    track.lifo(idx => {
+        sum += track.array[idx.index][field];
         cnt++;
-    }, offset||0, availLength)
-    
+    }, offset||0, limit);
+    if (cnt === 0) return undefined;
     return sum / cnt;
 }
 
 const fnCustom = (serie: Serie, options: SerieOptions, n: number, offset: number, callback: CustomAggregateVoidCallback) => {
-    const availLength = options.track.getOffsetAdjAvailableLength(offset);
-    if (availLength < n) return undefined;
-    options.track.lifo((pos, buffer) => {
-        callback(pos, buffer[pos.index][options.field])
-    }, offset, availLength);
+    const availLength = serie.availableLength||0;
+    const limit = Math.min(availLength, n);
+    const { track, field } = serie;
+    track.lifo(idx => {
+        callback(idx, track.array[idx.index][field])
+    }, offset||0, limit);
     return undefined;
 }
 
@@ -69,18 +77,17 @@ const fnCustom = (serie: Serie, options: SerieOptions, n: number, offset: number
  */
  
 const fnStDev: AggregateFn1Def = (serie: Serie, options: SerieOptions, n: number, offset?: number) => {
-    const availLength = options.track.getOffsetAdjAvailableLength(offset||0);
-    if (availLength === 0) return undefined;
-
+    const availLength = serie.availableLength||0;
+    const limit = Math.min(availLength, n);
+    const { track, field } = serie;
     const mean = serie.mean(n, offset)!;
-
     let sumOfSq = 0;
     let cnt = 0;
     serie.fn(n, offset||0, (pos, val) => {
         sumOfSq += (val - mean) ** 2;
         cnt++;
     });
-
+    if (cnt === 0) return undefined;
     return Math.sqrt(sumOfSq / cnt);
 }
 
@@ -133,7 +140,6 @@ export default class Serie {
         const availLength = this.track.getOffsetAdjAvailableLength(0);
         return availLength;
     }
-
     
 
     static createSerie(field: string, track: ClosedCircuitBuffer) {
