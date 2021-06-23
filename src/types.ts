@@ -41,11 +41,12 @@ export type FieldDict = {
     keys:           string[],
     publicKeys:     string[],
     hiddenKeys:     string[],
-    expressionKeys: string[];
-    hidden:         any;
-    cumulative:     any;
-    fn:             any;
-    fill:           any;
+    expressionKeys: string[],
+    ffills:         any[],
+    hidden:         any,
+    cumulative:     any,
+    fn:             any,
+    fill:           any,
 };
 
 export type Sampler = {
@@ -80,7 +81,7 @@ export type SamplerOptions = {
 
 // aggregator types
 export type AccumulationFunction        = (data: any, currentAggregateValue?: number, accumulation?: any) => number | undefined;
-export type ForwardFillFunction         = (data: any, previous: any) => number | undefined;
+export type ForwardFillFunction         = (data: any, previousValue: any) => number | undefined;
 
 export type SampleFieldUnnamed          = { fn: AccumulationFunction, cumulative?: boolean, fill?: ForwardFillFunction };
 export type SampleFieldDictEntry        = SampleFieldUnnamed | AccumulationFunction | string | number;

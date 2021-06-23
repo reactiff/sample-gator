@@ -41,7 +41,11 @@ All you need to do is:
 
 --- 
 
+<br />
+
 ## Install 
+
+
 
 ```bash
 yarn add sample-gator
@@ -49,87 +53,273 @@ yarn add sample-gator
 
 <br>
 
-## Basic usage
+--- 
 
-```ts
-const sampler = new Sampler({ 
-    interval:       1000, // 1000 ms == 1 second
-    bufferLength:   3600,         
-    fields:         [ 'time', 'price', 'qty' ],     
-});
+<br />
 
-sampler.onTrackStart = (track) => {
-    track.onUpdate = () => {
-        const samples = [];
-        track.fifo((pos, track) => {
-            items[pos.ordinal] = track[pos.index];
-        });
-        // analyze samples...
-    }
-};
+## Usage in React
+To use it in React, you need three files:
 
-sampler.startSampling();
-```
-
-<details>
-<summary>Click to expand the Full Example 1 - Readout</summary>
-
-```tsx
-// EXAMPLE 1 - SIMPLE READOUT
-
-import { Sampler } from 'sample-gator';
-
-const INTERVAL = 1000;  // ms
-const LENGTH   = 3600;  // this means one hour
-
-const sampler  = new Sampler({
-    interval:     INTERVAL,   
-    bufferLength: LENGTH,             
-    fields:       [ 'time', 'price', 'qty' ],
-});
-
-// declare once and read values in each time
-const items    = new Array(LENGTH);
-
-// THE READOUT FUNCTION
-function readOut(track) {
-    track.fifo((pos, track) => {
-        items[pos.ordinal] = track[pos.index];
-    });
-};
-
-sampler.onTrackStart = (t) => t.onUpdate = () => readOut(t);
-sampler.startSampling();
-
-// --------------------------------------------------------
-// EMULATE INCOMING DATA
-
-const date = new Date();    // for gettine time
-const data = {              // reusable data placeholder
-    time:  0,
-    price: 100,
-    qty:   0,
-};
-
-const emulateDataEvent = () => {
-    data.price = data.price + (Math.random() - 0.5);
-    data.qty   = Math.round(Math.random() * 100 - 50);
-    data.time  = date.getTime();
-
-    // PASS IT TO SAMPLER
-    sampler.capture(data);
-
-    // repeat
-    setTimeout(emulateDataEvent, 0);
-};
-
-emulateDataEvent();
-```
-</details>
+| File | Purpose | 
+| - | - |
+| App.tsx | To use or display the data |
+| createSampler.ts | (no changes needed) |
+| setup.ts | Your configuration, fields, calculations |
 
 <br>
 
+--- 
+
+<br />
+
+
+```tsx
+// App.tsx - Write your app logic here.
+
+import React, { useEffect, useState } from "react";
+import createSampler, { tracks, columns } from './createSampler';
+import MultiTrackTableRenderer from "../MultiTrackTableRenderer";
+
+export default () => {
+  const [dataSets, setDataSets] = useState<any>();
+
+  // Init sampler
+  useEffect(() => {
+
+    createSampler({ 
+      onTrackUpdate: () => {
+        
+        // Each track (if many) is read separately
+        // buy you can combind data from multiple tracks
+        
+        const data = {};
+                
+        tracks.forEach(track => {
+
+          const array   = new Array(track.length);
+          const columns = columns[track.key];
+
+          // instead of reading into an array, 
+          // you can plot it into a chart, for example
+          // for more efficiency
+          track.fifo((pos, buffer) => {
+            items[pos.ordinal] = buffer[pos.index];
+          });
+
+          data[track.key] = { array, columns };
+
+        });
+
+        // data from all tracks are here
+        // indexed by track key
+        setDataSets(data);
+
+      }
+    })
+  }, []);
+  return <>
+    {Object.entries(dataSets).map(([key, value]) => 
+        <DataTable key={key} data={value.array} columns={value.columns} />
+    )}
+  </>
+}
+```
+
+<br>
+
+--- 
+
+<br />
+
+## This is the setup script in three parts.  Define your cfields and custom expressions here.
+
+```ts
+// setup.ts                     - Configure your fields and calculations here
+
+import Sampler from "sample-gator";
+import RandomWalk from '@reactiff/random-walk';
+
+export const INTERVAL = 1000; // ms
+export const LENGTH = 20;
+export const FIELDS: any = {
+  time:   { fn: (d: any) => d.time },
+  price:  { fn: (d: any) => d.price,  fill: (d: any, pv: any) => pv },
+  qty:    { fn: (d: any) => d.qty,    fill: (d: any, pv: any) => pv },
+  exch:   { fn: (d: any) => d.exch,   fill: (d: any, pv: any) => pv },
+};
+
+// Combination of fields making up unique tracks
+export const TRACK_KEYS = ["exch"];
+
+// DATA LOADING AND SIMULATION
+export const SAMPLING_ENABLED   = true;
+```
 ---
+
+```ts
+// ... (continued setup.ts)     - Defining Custom Expressions
+
+export const EXPRESSIONS = {
+    
+  sma3: (series: any) => series.price.mean(3),
+  sma5: (series: any) => series.price.mean(5),
+  sma8: (series: any) => series.price.mean(8),
+  sma10: (series: any) => series.price.mean(10),
+  ema10: (series: any) => {
+    const n = 10;
+    const key = `ema${n}`;
+    const price = series.price;
+    const calcSerie = series[key];
+    if (calcSerie.availableLength < n + 1) return undefined;
+    let prev = calcSerie.value(-1);
+    if (!prev) prev = price.mean(n, -1);
+    const k = 2 / (n + 1);
+    const ema = price.value() * k + prev * (1 - k);
+    return ema;
+  },
+  cross: (_: any) => {
+    // check cross to the up side
+    if (_.ema10.value( 0) > _.sma10.value( 0) && _.ema10.value(-1) < _.sma10.value(-1)) return 1
+    // check cross to the down side
+    if (_.ema10.value( 0) < _.sma10.value( 0) && _.ema10.value(-1) > _.sma10.value(-1)) return -1;
+    return undefined;
+  }
+}
+```
+---
+
+```ts
+// ... (continued setup.ts)     - Preloading Data
+
+const date                      = new Date();
+const rndWalk                   = new RandomWalk(1, 1000, 500, 10, 10);
+
+// DATA PRELOADING
+export const PRELOADING_ENABLED = true;
+export const PRELOAD            = (sampler: Sampler, buffer: any) => {
+    
+    const st                    = date.getTime()
+    const rm                    = st % 1000
+
+    buffer.time                 = st - rm - 1000;
+
+    for (let i = 0; i < LENGTH - 1; i++) {
+
+        buffer.time             += 1000;
+        buffer.price            = rndWalk.next();
+        buffer.qty              = Math.round(Math.random() * 100 - 50);
+        buffer.exch             = 'ABC';
+
+        sampler.preload(buffer);
+    }
+}
+```
+---
+
+
+```ts
+// ... (continued setup.ts)     - Simulating Live Data Events
+
+const SIM_FIXED_INTERVAL        = 200;
+const SIM_RANDOM_INTERVAL       = false;
+const SIM_MIN_INTERVAL          = 20;
+const SIM_MAX_INTERVAL          = 1500;
+
+export const SIMULATION_ENABLED = true;
+export const SIMULATE           = (sampler: Sampler, input_buffer: any) => {
+    
+    input_buffer.time           = new Date().getTime();
+    input_buffer.price          = rndWalk.next();
+    input_buffer.qty            = Math.round(Math.random() * 100 - 50);
+
+    const exch                  = exchanges[0] // exchanges[Math.round(Math.random())];
+    input_buffer.exch           = exch;
+
+    console.log('Sent: ', exch);
+
+    sampler.capture(input_buffer);
+    
+    let interval                = SIM_FIXED_INTERVAL;
+
+    if (SIM_RANDOM_INTERVAL) {
+      interval = Math.random() * (SIM_MAX_INTERVAL - SIM_MIN_INTERVAL) + SIM_MIN_INTERVAL;
+    }
+
+    setTimeout((s, b) => {
+      SIMULATE(s, b)
+    }, interval, sampler, input_buffer );
+}
+```
+---
+
+<br />
+
+## 3) createSampler.ts
+
+```ts
+// YOU DO NOT NEED TO CHANGE ANYTHING IN THIS FILE, UNLESS YOU HAVE TO
+
+import Sampler, { ClosedCircuitBuffer } from "sample-gator";
+import * as __ from "./setup";
+export type TrackDataDictionary = { [index: string]: any[] };
+export type SamplerEventHandlers = {
+  onIntervalData?: () => void;
+  onTrackUpdate?: (track: ClosedCircuitBuffer) => void;
+};
+
+const _events: SamplerEventHandlers = {
+  onIntervalData: undefined,
+  onTrackUpdate: undefined,
+};
+
+const input_buffer: any = {};
+export const output: TrackDataDictionary = {};
+export const columns: TrackDataDictionary = {};
+export const tracks: ClosedCircuitBuffer[] = [];
+
+const createSampler = (eventHandlers: SamplerEventHandlers) => {
+  Object.assign(_events, eventHandlers);
+
+  const gator = new Sampler({
+    interval: __.INTERVAL,
+    bufferLength: __.LENGTH,
+    trackKeys: __.TRACK_KEYS,
+    fields: __.FIELDS,
+  });
+
+  // init INPUT placeholder
+  const blank = gator.sampler.createSample();
+  Object.assign(input_buffer, blank);
+  Object.entries(__.EXPRESSIONS).map(([key, fn]: any[]) => gator.addExpression(key, fn));
+
+  gator.onTrackStart = (track) => {
+    output[track.key] = new Array(__.LENGTH);
+    tracks.push(track);
+    columns[track.key] = Object.keys(track.series);
+    track.onUpdate = () => {
+      _events.onTrackUpdate && _events.onTrackUpdate(track);
+    };
+  };
+
+  gator.onInterval = () => _events.onIntervalData && _events.onIntervalData();
+
+  if (__.PRELOADING_ENABLED) {
+    __.PRELOAD(gator, input_buffer);
+    _events.onIntervalData && _events.onIntervalData();
+  }
+
+  if (__.SAMPLING_ENABLED) gator.startSampling();
+  if (__.SIMULATION_ENABLED) __.SIMULATE(gator, input_buffer);
+};
+
+export default createSampler;
+```
+
+<br />
+
+---
+
+<br />
 
 ## fifo() / lifo()
 
@@ -180,14 +370,14 @@ const field = {
 
     open:       {   
                     fn: (d, curr) => value(curr, d.price), 
-                    fill: p => p.close 
+                    fill: (d, pv) => p.close 
                 },                  // [^5]
 
     high:       {   
                     fn: (d, curr) => Math.max(
                         d.price, 
                         value(curr, d.price)), 
-                    fill: p => p.close 
+                    fill: (d, pv) => p.close 
                 }, 
 
     buyVol:     {   

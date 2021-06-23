@@ -13,10 +13,9 @@ const TableRow = (props: any) => {
             {
                 isArray &&
                 item.map((value: any, index: number) => {
-                    return <td key={cols[index]}>
+                    return <td key={cols[index]} className={cellClass(value)}>
                         {
-                            typeof value === 'number' &&
-                            value.toFixed(0)
+                            formatValue(value)
                         }
                     </td>
                 })   
@@ -25,10 +24,9 @@ const TableRow = (props: any) => {
             {
                 !isArray &&
                 cols.map((c: any, index: number) => {
-                    return <td key={cols[index]}>
+                    return <td key={cols[index]} className={cellClass(item[c])}>
                         {
-                            typeof item[c] === 'number' &&
-                            item[c].toFixed(0)
+                            formatValue(item[c])
                         }
                     </td>
                 })
@@ -38,3 +36,16 @@ const TableRow = (props: any) => {
 }
 
 export default TableRow;
+
+function formatValue(value: any) {
+    if (typeof value === 'number') {
+        return value.toFixed(0);
+    }
+    return value;
+}
+function cellClass(value: any) {
+    if (typeof value === 'number') {
+        return 'number';
+    }
+    return '';
+}

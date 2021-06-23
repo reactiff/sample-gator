@@ -1,7 +1,7 @@
 import ClosedCircuitBuffer from "./ClosedCircuitBuffer";
 
 import Serie from "./Serie";
-import { Sampler, SamplerOptions, FieldDict, Expression, SampleFieldDictEntry, SampleFieldArrayItem } from "./types";
+import { Sampler, SamplerOptions, FieldDict, Expression, SampleFieldDictEntry, SampleFieldArrayItem, ForwardFillFunction } from "./types";
 
 function deleteKeys(object: any, keysToDelete: string[]) {
     const obj: any = {...object};
@@ -62,6 +62,7 @@ function getFields(options: SamplerOptions, expressions: any[]) {
         publicKeys: [],
         hiddenKeys: [],
         expressionKeys: [],
+        ffills: [],
         hidden: {},
         cumulative: {},
         fn: {},
@@ -126,7 +127,14 @@ export function createSampler(options: SamplerOptions) {
         sampler.fields          = getFields(options, sampler.expressions);
         sampler.createSample    = createSampleFactory(sampler.fields);
         sampler.cumulatives     = sampler.fields.keys.filter(k => sampler.fields.cumulative[k]);
-        sampler.blank           = deleteKeys(sampler.createSample(), sampler.cumulatives);
+
+        const sample            = sampler.createSample();
+        sampler.blank           = deleteKeys(sample, sampler.cumulatives);
+        sampler.tracks.forEach(t => t.createSeries());
+
+        sampler.fields.ffills   = sampler.fields.publicKeys
+                                    .filter(key => !!sampler.fields.fill[key])
+                                    .map(key => ({ key, fn: sampler.fields.fill[key] }) );
     }
 
     function getSampleTime(time: number) {
@@ -162,12 +170,10 @@ export function createSampler(options: SamplerOptions) {
     }
 
     function ffill(currSlot: any, prevSlot: any) {
-        sampler.fields.publicKeys
-            .filter(key => !!sampler.fields.fill[key])
-            .forEach(key => {
-                currSlot[sampler.timeKey] = prevSlot[sampler.timeKey] + sampler.interval;
-                currSlot[key] = sampler.fields.fill[key](prevSlot);
-            });
+        currSlot[sampler.timeKey] = prevSlot[sampler.timeKey] + sampler.interval;
+        sampler.fields.ffills.forEach(ffill => {
+            currSlot[ffill.key] = ffill.fn(currSlot, prevSlot[ffill.key]);
+        })
         currSlot.__count = 1;
     };
 
@@ -190,8 +196,10 @@ export function createSampler(options: SamplerOptions) {
         sampler.expressionDict[name] = expression;
         sampler.expressions.push({ name, expression });
         initSeries();
-        sampler.tracks.forEach(t => t.createSeries());
+        
     }
+
+    initSeries();
 
     return sampler;
 }

@@ -88,7 +88,12 @@ class ClosedCircuitBuffer {
 
         const seriesHandler = {
             get: (target, prop, receiver) => {
-                return target[prop]();
+                try {
+                    return target[prop]();    
+                }
+                catch(ex) {
+                    throw new Error("Tried to access a non-existent Serie: '" + prop + "'");
+                }
             }
         };
         
@@ -178,14 +183,33 @@ class ClosedCircuitBuffer {
             this.fillMissingSamples(sampleTime);
         }
 
+        if (data.exch !== this.key) {
+            debugger;
+        }
+
         this.sampler.collect(this, this.current, data, sampleTime);
+
+        // if (data.exch !== this.key) {
+        //     debugger;
+        // }
 
         if (this.sampler.interval === 0) {
             this.nextSample('capture'); 
             this.lastPeriodTime = sampleTime;
         }
         
+        if (data.exch !== this.key) {
+            debugger;
+        }
+
+        console.log('\tCaptured: ', this.get().exch);
+
         this.onUpdate && this.onUpdate();
+
+        if (data.exch !== this.key) {
+            debugger;
+        }
+
     }
     
     lifo(callback: IteratorCallback, offset: number, limit = -1) {

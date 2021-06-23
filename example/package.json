@@ -10,11 +10,18 @@
     "eject": "node ../node_modules/react-scripts/bin/react-scripts.js eject"
   },
   "dependencies": {
+    "@babel/core": "^7.14.6",
+    "@material-ui/core": "^4.11.4",
     "@reactiff/random-walk": "^1.0.0",
-    "sample-gator": "link:..",
+    "@reactiff/ui-core": "^1.0.19",
+    "clsx": "^1.1.1",
+    "csstype": "^3.0.8",
     "lodash": "^4.17.21",
+    "lorem-ipsum": "^2.0.3",
     "react": "link:../node_modules/react",
-    "react-dom": "link:../node_modules/react-dom"
+    "react-dom": "link:../node_modules/react-dom",
+    "sample-gator": "link:..",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/plugin-syntax-object-rest-spread": "^7.8.3",

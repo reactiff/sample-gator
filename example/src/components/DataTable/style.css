@@ -11,6 +11,12 @@ table.data-table th {
 
 table.data-table td {
     border-bottom: thin solid #80808033;
+    padding: 3px 8px;
+}
+
+table.data-table td.number {
+    border-bottom: thin solid #80808033;
     text-align: right;
     padding: 3px 8px;
 }
+

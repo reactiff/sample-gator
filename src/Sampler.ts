@@ -56,39 +56,36 @@ class MultiTrackBuffer {
     this.sampling = false;
   }
 
-  preload(data: any, filter?: BufferFilter) {
-    this.createDataTracks(data);
-    Object.entries(this.tracks)
-      .filter(kv => (filter || noFilter)(kv[0], kv[1]))
-      .forEach(kv => kv[1].preload(data));
+  preload(data: any) {
+    const track = this.getOrCreateTrack(data);
+    track.preload(data);
   }
 
   capture(data: any, filter?: BufferFilter) {
-    this.createDataTracks(data);
-    Object.entries(this.tracks)
-      .filter(kv => (filter || noFilter)(kv[0], kv[1]))
-      .forEach(kv => kv[1].capture(data));
+    const track = this.getOrCreateTrack(data);
+    track.capture(data);
   }
 
-  createDataTracks(data: any) {
-    const _instance = this;
+  getOrCreateTrack(data: any) {
+    
     const sampler = this.sampler;
-    const trackKey: string = sampler.trackKeys.map(
-      pk => valueOrDefault(data[pk], '')
+    
+    const trackKey = sampler.trackKeys.map(pk => 
+      valueOrDefault(data[pk], '')
     ).join('.');
-    if (!_instance.tracks[trackKey]) {
+
+    if (!this.tracks[trackKey]) {
         const track = new ClosedCircuitBuffer(sampler.bufferLength, sampler);
         sampler.trackKeys.forEach(pk => {
           track.tags[pk] = data[pk];
         })
         track.key = trackKey;
-        _instance.tracks[trackKey] = track;
+        this.tracks[trackKey] = track;
         sampler.tracks.push(track);
-        if (_instance.onTrackStart) {
-          _instance.onTrackStart(track);
-        }
-        
+        this.onTrackStart && this.onTrackStart(track);
     }
+
+    return this.tracks[trackKey];
   }
 }
 
