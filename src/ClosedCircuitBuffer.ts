@@ -202,8 +202,6 @@ class ClosedCircuitBuffer {
             debugger;
         }
 
-        console.log('\tCaptured: ', this.get().exch);
-
         this.onUpdate && this.onUpdate();
 
         if (data.exch !== this.key) {

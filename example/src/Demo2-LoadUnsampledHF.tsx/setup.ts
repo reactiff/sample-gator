@@ -84,8 +84,6 @@ export const SIMULATE           = (sampler: Sampler, input_buffer: any) => {
     const exch                  = exchanges[0] // exchanges[Math.round(Math.random())];
     input_buffer.exch           = exch;
 
-    console.log('Sent: ', exch);
-
     sampler.capture(input_buffer);
     
     let interval                = SIM_FIXED_INTERVAL;

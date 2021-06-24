@@ -1,5 +1,4 @@
 import React from "react";
-import DataTable from './components/DataTable';
 import ui from '@reactiff/ui-core';
 
 export default (props: { data: any }) => {
@@ -10,7 +9,7 @@ export default (props: { data: any }) => {
   return <ui.row>
     {
       keys.map((key, index) => {
-        return <DataTable 
+        return <ui.table 
           key={key}
           cols={multiTrack[key].columns} 
           items={multiTrack[key].array} 
