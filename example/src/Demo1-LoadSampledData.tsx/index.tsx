@@ -3,7 +3,6 @@ import init, { tracks, columns } from './createSampler';
 import { useEffect } from "react";
 import { useState } from "react";
 
-import ui from '@reactiff/ui-core';
 import MultiTrackTableRenderer from "../MultiTrackTableRenderer";
 
 const Demo1 = () => {

@@ -1,7 +1,7 @@
 {
   "name": "sample-gator",
   "homepage": "https://reactiff.github.io/sample-gator",
-  "version": "1.0.21",
+  "version": "1.1.0",
   "description": "",
   "author": "Rick Ellis",
   "license": "MIT",
@@ -16,9 +16,11 @@
   "scripts": {
     "build": "microbundle-crl --no-compress --format modern,cjs",
     "start": "microbundle-crl watch --no-compress --format modern,cjs",
-    "clean": "rd /s /q \"dist\"",
-    "rebuild": "run-s clean build",
-    "restart": "run-s clean start",
+    "clean": "run-s -c clean:root clean:example",
+    "clean:root": "rd /s /q \"dist\"",
+    "clean:example": "rd /s /q \"example/build\"",
+    "relink": "\"link-and-install.bat\"",
+    "rebuild": "run-s -c clean relink",
     "prepare": "run-s build",
     "test": "run-s test:unit test:lint test:build",
     "test:build": "run-s build",

@@ -1,6 +1,6 @@
 import ClosedCircuitBuffer from "./ClosedCircuitBuffer";
-
 import Serie from "./Serie";
+import createSeries from "./Serie/createSeries";
 import { Sampler, SamplerOptions, FieldDict, Expression, SampleFieldDictEntry, SampleFieldArrayItem, ForwardFillFunction } from "./types";
 
 function deleteKeys(object: any, keysToDelete: string[]) {
@@ -130,7 +130,7 @@ export function createSampler(options: SamplerOptions) {
 
         const sample            = sampler.createSample();
         sampler.blank           = deleteKeys(sample, sampler.cumulatives);
-        sampler.tracks.forEach(t => t.createSeries());
+        sampler.tracks.forEach(t => createSeries(t));
 
         sampler.fields.ffills   = sampler.fields.publicKeys
                                     .filter(key => !!sampler.fields.fill[key])
@@ -158,13 +158,15 @@ export function createSampler(options: SamplerOptions) {
         });
         sampler.fields.publicKeys.forEach(key => {
             if (key === sampler.timeKey) {
-                const origTime = time || data[key];
-                const sampleTime = getSampleTime(origTime);
-                data[key] = sampleTime
-            }
-            const result = sampler.fields.fn[key](data, currSlot[key], currSlot);
-            if (typeof result !== 'undefined') {
-                currSlot[key] = result;
+                if (!currSlot[sampler.timeKey]) {
+                    currSlot[sampler.timeKey] = getSampleTime(data[key]);
+                }
+            } 
+            else {
+                const result = sampler.fields.fn[key](data, currSlot[key], currSlot);
+                if (typeof result !== 'undefined') {
+                    currSlot[key] = result;
+                }
             }
         });
     }
@@ -174,20 +176,19 @@ export function createSampler(options: SamplerOptions) {
         sampler.fields.ffills.forEach(ffill => {
             currSlot[ffill.key] = ffill.fn(currSlot, prevSlot[ffill.key]);
         })
-        currSlot.__count = 1;
+        currSlot.__count = -1;
     };
 
     function collect(track: ClosedCircuitBuffer, currSlot: any, data: any, time: number) {     
         aggregateSample(currSlot, data, time);
         calculateExpressions(currSlot, track);
+        return true;
     };
     
     function newSamplePredicate(currSlot: any, data: any, time: number, lastPeriodTime: number) {
-        const sampleTime = getSampleTime(time);
         // compare elapsed time since last period time
-        if (typeof lastPeriodTime === 'undefined') return true;
         if (sampler.interval === 0) return true;
-        if (sampleTime - lastPeriodTime >= sampler.interval) return true; 
+        if (time - lastPeriodTime >= sampler.interval) return true; 
         return false;
     };
     

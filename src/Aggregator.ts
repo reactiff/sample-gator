@@ -1,11 +1,11 @@
-import ClosedCircuitBuffer from "./ClosedCircuitBuffer";
+import ClosedCircuitBuffer, { advance } from "./ClosedCircuitBuffer";
 import { BufferFilter, Expression, Sampler, SamplerOptions, Dictionary } from './types';
 import { createSampler } from './createSampler';
 import { value as valueOrDefault } from './helpers';
 
 const noFilter = () => true;
 
-class MultiTrackBuffer {  
+class Aggregator {  
 
   timer:          any;
   sampler:        Sampler;
@@ -15,6 +15,7 @@ class MultiTrackBuffer {
   // -- EVENTS 
   onTrackStart?:  (track: ClosedCircuitBuffer) => void;
   onInterval?:    () => void;
+  onLoad?:        () => void;
   
   constructor(options: SamplerOptions) {
     this.sampler = createSampler(options);
@@ -33,21 +34,14 @@ class MultiTrackBuffer {
   startSampling() {
     if (this.sampler.suppressAutoSampling) return;
     if (this.sampling) return;
-    
     const _instance = this;
-
     // timer for buffer group
-    this.timer = setInterval(
-      () => {
-        _instance.sampler.tracks.forEach((_track) => {
-          _track.nextSample('timer')
-        })
-        if (_instance.onInterval) {
-          _instance.onInterval();
-        }
-      }, this.sampler.interval
-    );
-
+    this.timer = setInterval(() => {
+      _instance.sampler.tracks.forEach((_track) => {
+        advance(_track);
+      })
+      _instance.onInterval && _instance.onInterval();
+    }, this.sampler.interval);
     this.sampling = true;
   }
 
@@ -58,7 +52,9 @@ class MultiTrackBuffer {
 
   preload(data: any) {
     const track = this.getOrCreateTrack(data);
-    track.preload(data);
+    const loaded = track.preload(data);
+    if (!loaded) this.onLoad && this.onLoad();
+    return loaded;
   }
 
   capture(data: any, filter?: BufferFilter) {
@@ -67,26 +63,18 @@ class MultiTrackBuffer {
   }
 
   getOrCreateTrack(data: any) {
-    
     const sampler = this.sampler;
-    
-    const trackKey = sampler.trackKeys.map(pk => 
-      valueOrDefault(data[pk], '')
-    ).join('.');
-
+    const trackKey = sampler.trackKeys.map(pk => valueOrDefault(data[pk], '')).join('.');
     if (!this.tracks[trackKey]) {
         const track = new ClosedCircuitBuffer(sampler.bufferLength, sampler);
-        sampler.trackKeys.forEach(pk => {
-          track.tags[pk] = data[pk];
-        })
+        sampler.trackKeys.forEach(pk => track.tags[pk] = data[pk]);
         track.key = trackKey;
         this.tracks[trackKey] = track;
         sampler.tracks.push(track);
         this.onTrackStart && this.onTrackStart(track);
     }
-
     return this.tracks[trackKey];
   }
 }
 
-export default MultiTrackBuffer;
+export default Aggregator;

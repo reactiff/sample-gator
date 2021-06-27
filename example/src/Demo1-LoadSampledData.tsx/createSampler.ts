@@ -32,7 +32,7 @@ const init = (eventHandlers: SamplerEventHandlers) => {
 
   if (Reflect.has(__, "EXPRESSIONS")) {
     const xx = (__ as any).EXPRESSIONS;
-    Object.entries(xx).map(([key, fn]: any[]) => {
+    Object.entries(xx).forEach(([key, fn]: any[]) => {
       gator.addExpression(key, fn);
     });
   }

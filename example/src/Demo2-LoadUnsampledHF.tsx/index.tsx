@@ -9,25 +9,26 @@ const Demo = () => {
   // Init sampler
   useEffect(() => {
 
-    createSampler({ 
-      onTrackUpdate: () => {
-
-        const data = {};
-
-        tracks.forEach(track => {
-
-          const items = new Array(track.length);
-
-          track.fifo((pos, buffer) => {
-            items[pos.ordinal] = buffer[pos.index];
-          });
-
-          data[track.key] = { array: items, columns: columns[track.key] };
-
+    const stitch = () => {
+      const data = {};
+      tracks.forEach(track => {
+        const items = new Array(track.length);
+        track.fifo((pos, buffer) => {
+          items[pos.ordinal] = buffer[pos.index];
         });
+        data[track.key] = { array: items, columns: columns[track.key] };
+      });
+      setMultiTrack(data);
+    }
 
-        setMultiTrack(data);
-      }
+    
+    createSampler({ 
+      // when preload completes
+      onLoad: () => stitch(),
+      // every time a new interval sample is created
+      onIntervalData: () => {},
+      // whenever any track is updated
+      onTrackUpdate: () => stitch(),
     })
   
   }, []);

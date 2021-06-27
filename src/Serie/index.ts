@@ -130,15 +130,18 @@ export default class Serie {
         this.stDev = attachAggregateFn(this, options, fnStDev);
 
         this.value = (offset = 0) => {
-            const availLength = this.track.getOffsetAdjAvailableLength(offset);
+            const availLength = this.getOffsetAdjAvailableLength(offset);
             if (availLength === 0) return undefined;
             return this.track.get(offset)[this.field];
         }
     }
 
+    getOffsetAdjAvailableLength(offset: number) {
+        return Math.max(0, Math.min(this.track.array.length, this.track.counter + 1) - Math.abs(offset));
+    }
+
     get availableLength() {
-        const availLength = this.track.getOffsetAdjAvailableLength(0);
-        return availLength;
+        return this.getOffsetAdjAvailableLength(0);
     }
     
 

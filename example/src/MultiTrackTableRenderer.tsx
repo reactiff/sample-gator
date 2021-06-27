@@ -1,19 +1,35 @@
 import React from "react";
 import ui from '@reactiff/ui-core';
 
-export default (props: { data: any }) => {
+const style = {
+  border: 'thin solid white',
+  margin: 0,
+  padding: 8,
+  '& table tr td': {
+    paddingBottom: 8,
+  },
+  '& table tr td:first-of-type': {
+    textAlign: 'left',
+  }
+};
 
+export default (props: { data: any }) => {
+  
   const multiTrack = props.data;
   const keys = Object.keys(multiTrack);
 
-  return <ui.row>
+  
+
+  return <ui.row css={{flexWrap: 'wrap'}}>
     {
       keys.map((key, index) => {
-        return <ui.table 
-          key={key}
-          cols={multiTrack[key].columns} 
-          items={multiTrack[key].array} 
-        />
+        const track = multiTrack[key];
+        return <ui.col key={key} css={style} grow>
+          <ui.table 
+            cols={[...track.columns]} 
+            items={track.array} 
+          />
+        </ui.col>
       })
     }
   </ui.row>

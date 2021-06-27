@@ -2,7 +2,7 @@ import React from "react";
 
 import ui from '@reactiff/ui-core';
 
-import Demo1 from './Demo1-LoadSampledData.tsx';
+// import Demo1 from './Demo1-LoadSampledData.tsx';
 import Demo2 from './Demo2-LoadUnsampledHF.tsx';
 
 // import Demo3 from './Demo1-LoadSampledData.tsx';
