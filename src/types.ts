@@ -32,8 +32,7 @@ export type NewSamplePredicate = (
 ) => boolean;
 
 export type ForwardFill = (
-    currSlot: any,
-    prevSlot: any,
+    track: ClosedCircuitBuffer,
 ) => void;
 
 

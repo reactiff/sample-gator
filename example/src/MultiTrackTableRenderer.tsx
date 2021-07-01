@@ -26,7 +26,7 @@ export default (props: { data: any }) => {
         const track = multiTrack[key];
         return <ui.col key={key} css={style} grow>
           <ui.table 
-            cols={[...track.columns]} 
+            cols={['__count', 'info', ...track.columns]} 
             items={track.array} 
           />
         </ui.col>

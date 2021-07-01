@@ -1,4 +1,4 @@
-import Sampler, { ClosedCircuitBuffer } from "sample-gator";
+import Aggregator, { ClosedCircuitBuffer } from "sample-gator";
 import * as __ from "./setup";
 export type TrackDataDictionary = { [index: string]: any[] };
 export type SamplerEventHandlers = {
@@ -18,10 +18,10 @@ export const output: TrackDataDictionary = {};
 export const columns: TrackDataDictionary = {};
 export const tracks: ClosedCircuitBuffer[] = [];
 
-const init = (eventHandlers: SamplerEventHandlers) => {
+const createSampler = (eventHandlers: SamplerEventHandlers) => {
   Object.assign(_events, eventHandlers);
 
-  const gator = new Sampler({
+  const gator = new Aggregator({
     interval: __.OUTPUT_INTERVAL,
     bufferLength: __.LENGTH,
     trackKeys: __.TRACK_KEYS,
@@ -47,11 +47,14 @@ const init = (eventHandlers: SamplerEventHandlers) => {
 
   if (__.PRELOADING_ENABLED) {
     __.PRELOAD(gator, input_buffer);
-    _events.onIntervalData && _events.onIntervalData();
   }
 
   if (__.SAMPLING_ENABLED) gator.startSampling();
   if (__.SIMULATION_ENABLED) __.SIMULATE(gator, input_buffer);
+
+  return () => {
+    gator.stopSampling();
+  };
 };
 
-export default init;
+export default createSampler;

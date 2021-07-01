@@ -1,9 +1,17 @@
-import ClosedCircuitBuffer, { advance } from "./ClosedCircuitBuffer";
+import ClosedCircuitBuffer, { autoAdvance } from "./ClosedCircuitBuffer";
 import { BufferFilter, Expression, Sampler, SamplerOptions, Dictionary } from './types';
 import { createSampler } from './createSampler';
 import { value as valueOrDefault } from './helpers';
 
 const noFilter = () => true;
+
+
+
+function getCurrentTime(a: Aggregator) {
+  const keys = Object.keys(a.tracks);
+  if (!keys.length) return;
+  return a.tracks[keys[0]].current[a.sampler.timeKey];
+}
 
 class Aggregator {  
 
@@ -12,6 +20,8 @@ class Aggregator {
   tracks:         Dictionary<ClosedCircuitBuffer> = {};
   sampling:       boolean         = false;
   
+  curr
+
   // -- EVENTS 
   onTrackStart?:  (track: ClosedCircuitBuffer) => void;
   onInterval?:    () => void;
@@ -32,13 +42,16 @@ class Aggregator {
   }
   
   startSampling() {
-    if (this.sampler.suppressAutoSampling) return;
     if (this.sampling) return;
     const _instance = this;
     // timer for buffer group
+    const lastTime = getCurrentTime(this);
+    const now = new Date().getTime();
+    let currentTime = lastTime || now - (now % this.sampler.interval); 
     this.timer = setInterval(() => {
+      currentTime += this.sampler.interval;
       _instance.sampler.tracks.forEach((_track) => {
-        advance(_track);
+        autoAdvance(_track, currentTime);
       })
       _instance.onInterval && _instance.onInterval();
     }, this.sampler.interval);
@@ -46,6 +59,7 @@ class Aggregator {
   }
 
   stopSampling() {
+    if (!this.sampling) return;
     clearInterval(this.timer);
     this.sampling = false;
   }

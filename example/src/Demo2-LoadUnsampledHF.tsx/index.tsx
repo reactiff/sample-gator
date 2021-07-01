@@ -20,17 +20,15 @@ const Demo = () => {
       });
       setMultiTrack(data);
     }
-
     
-    createSampler({ 
+    return createSampler({ 
       // when preload completes
       onLoad: () => stitch(),
       // every time a new interval sample is created
-      onIntervalData: () => {},
+      onIntervalData: () => stitch(),
       // whenever any track is updated
       onTrackUpdate: () => stitch(),
     })
-  
   }, []);
 
   if (!multiTrack) return null;

@@ -47,7 +47,6 @@ const init = (eventHandlers: SamplerEventHandlers) => {
     // create an output buffer for each track when one starts
     output[track.key] = new Array(__.LENGTH);
     tracks.push(track);
-    // TODO verify this works here
     columns[track.key] = Object.keys(track.series);
     track.onUpdate = () => {
       readTrackData(track);

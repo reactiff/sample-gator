@@ -132,9 +132,11 @@ export function createSampler(options: SamplerOptions) {
         sampler.blank           = deleteKeys(sample, sampler.cumulatives);
         sampler.tracks.forEach(t => createSeries(t));
 
-        sampler.fields.ffills   = sampler.fields.publicKeys
-                                    .filter(key => !!sampler.fields.fill[key])
-                                    .map(key => ({ key, fn: sampler.fields.fill[key] }) );
+        const dataKeys          = [...sampler.fields.hiddenKeys, ...sampler.fields.publicKeys].filter(k => k!== sampler.timeKey);
+        sampler.fields.ffills   = dataKeys.map(key => ({ 
+                                    key, 
+                                    fn: sampler.fields.fill[key] || ((prev: any) => prev[key])
+                                }));
     }
 
     function getSampleTime(time: number) {
@@ -152,9 +154,9 @@ export function createSampler(options: SamplerOptions) {
     }
 
     function aggregateSample(currSlot: any, data: any, time: number) {
-        currSlot.__count++;
+        
         sampler.fields.hiddenKeys.forEach(key => {
-            sampler.fields.fn[key](data, currSlot[key], currSlot);
+            sampler.fields.fn[key](data, currSlot);
         });
         sampler.fields.publicKeys.forEach(key => {
             if (key === sampler.timeKey) {
@@ -163,20 +165,25 @@ export function createSampler(options: SamplerOptions) {
                 }
             } 
             else {
-                const result = sampler.fields.fn[key](data, currSlot[key], currSlot);
+                const result = sampler.fields.fn[key](data, currSlot);
                 if (typeof result !== 'undefined') {
                     currSlot[key] = result;
                 }
             }
         });
+
+        currSlot.__count++;
+        
     }
 
-    function ffill(currSlot: any, prevSlot: any) {
-        currSlot[sampler.timeKey] = prevSlot[sampler.timeKey] + sampler.interval;
+    function ffill(track: ClosedCircuitBuffer) {
+        // currSlot[sampler.timeKey] = prevSlot[sampler.timeKey] + sampler.interval;
         sampler.fields.ffills.forEach(ffill => {
-            currSlot[ffill.key] = ffill.fn(currSlot, prevSlot[ffill.key]);
+            const fn = ffill.fn || ((prev: any) => prev[ffill.key]);
+            track.current[ffill.key] = fn(track.get(-1), track);
         })
-        currSlot.__count = -1;
+        calculateExpressions(track.current, track);
+        track.current.__count = -1;
     };
 
     function collect(track: ClosedCircuitBuffer, currSlot: any, data: any, time: number) {     

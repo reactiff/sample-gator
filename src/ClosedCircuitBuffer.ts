@@ -9,35 +9,25 @@ import {
 
 function _preload(track: ClosedCircuitBuffer, data: any) {
     const sampleTime = track.sampler.getSampleTime(data[track.sampler.timeKey]);
-
     if (!track.lastPeriodTime) {
         track.lastPeriodTime = sampleTime;
     } 
     else if (track.sampler.newSamplePredicate(track.current, data, sampleTime, track.lastPeriodTime)) { // shouldAdvance?
-        if (!advance(track, sampleTime, true)) {
+        const capacityReached = preloadAdvance(track, sampleTime);
+        if (capacityReached) {
             return false; // done
         }     
     }
-
     track.sampler.collect(track, track.current, data, sampleTime);
-
     return true;
 }
 
 function _capture(track: ClosedCircuitBuffer, data: any) {
-    
     const sampleTime = track.sampler.getSampleTime(data[track.sampler.timeKey]);
-    let loadingComplete = false;
-
     if (!track.lastPeriodTime) {
         track.lastPeriodTime = sampleTime;
     } 
-    else if (track.sampler.newSamplePredicate(track.current, data, sampleTime, track.lastPeriodTime)) {
-        advance(track, sampleTime, false);     
-    }
-
     track.sampler.collect(track, track.current, data, sampleTime);
-    
     if (track.onUpdate) track.onUpdate();
 }
 
@@ -49,58 +39,57 @@ function increment(track: ClosedCircuitBuffer) {
     }
 }
 
-export function advance(track: ClosedCircuitBuffer, nextTime?: number, preload?: boolean) {
-    
-    if (preload && track.counter + 1 === track.length) return false;
-
-    const time = nextTime || track.current[track.sampler.timeKey];
-    
+export function preloadAdvance(track: ClosedCircuitBuffer, nextTime?: number) {
+    if (track.counter + 1 === track.length) return true;
+    const time = nextTime || (track.current[track.sampler.timeKey] + track.sampler.interval);
     // if any samples were skipped, fill them before capturing
-    if (track.sampler.interval > 0) {
-        fillMissingSamples(track, time);
+    if (track.sampler.interval > 0 && time - track.lastPeriodTime > track.sampler.interval) {
+        const capacityReached = preloadFillMissingSamples(track, time, track.length);
+        if (capacityReached) {
+            return true;
+        }
     }
-
     increment(track);
-    
     Object.assign(track.array[track.cursor], track.sampler.blank);
     track.array[track.cursor][track.sampler.timeKey] = time;
     track.lastPeriodTime = time;
-
-    return true;
+    return false;
 }
 
-function fillMissingSamples(track: ClosedCircuitBuffer, time: number) {
-
+function preloadFillMissingSamples(track: ClosedCircuitBuffer, time: number, maxLength?: number) {
     // when loading from history, we need to account for missing data
     // and insert missing samples, something that would normally
     // be taken care of by the timer
-
     let normallySkippedMax = 1;
-    if (track.sampler.suppressAutoSampling) {
-        normallySkippedMax = 0;
-    }
-
     if (track.sampler.interval > 0 && track.lastPeriodTime) {
         const elapsed = time - track.lastPeriodTime;
         const missingSamples = elapsed / track.sampler.interval - normallySkippedMax;
         if (missingSamples > 0) {
             for (let i = 0; i<missingSamples; i++) {
-
                 const insertedTime = track.lastPeriodTime + track.sampler.interval;
-
                 increment(track);
-
                 Object.assign(track.array[track.cursor], track.sampler.blank);
                 track.array[track.cursor][track.sampler.timeKey] = insertedTime;
-                
-                const prevSlot = track.get(-1);
-                track.sampler.ffill(track.array[track.cursor], prevSlot);                          
-                
+                track.sampler.ffill(track);                          
                 track.lastPeriodTime = insertedTime;
+                if (maxLength && track.counter + 1 === track.length) return true;
             }
         }
     }
+    return false;
 }
+
+export function autoAdvance(track: ClosedCircuitBuffer, nextTime: number) {
+    // if current slot did not receive any data
+    if (track.current.__count === 0) {
+        track.sampler.ffill(track);                          
+    }
+    increment(track);
+    Object.assign(track.array[track.cursor], track.sampler.blank);
+    track.array[track.cursor][track.sampler.timeKey] = nextTime;
+    track.lastPeriodTime = nextTime;
+}
+
 
 class ClosedCircuitBuffer {
     key: string = '';
